@@ -83,15 +83,18 @@ class MainActivity : ComponentActivity() {
                 ScalingLazyColumn(
                     // The weight modifier makes this composable expand to fill all available
                     // vertical space in the Column, pushing the button down.
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f) // Fill remaining space above the button
+                        .fillMaxWidth(),
                     contentPadding = PaddingValues(
-                        top = 32.dp, // Pushes content down from the clipped top edge
+                        //top = 32.dp, // Pushes content down from the clipped top edge
                         bottom = 40.dp // Ensures space between text and the static button
                     ),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                     autoCentering = AutoCenteringParams(itemIndex = 0)
                 ) {
+                    item { Spacer(modifier = Modifier.height(40.dp)) }
                     item {
                         Text(
                             modifier = Modifier.padding(horizontal = 16.dp),
