@@ -1,9 +1,3 @@
-/* While this template provides a good starting point for using Wear Compose, you can always
- * take a look at https://github.com/android/wear-os-samples/tree/main/ComposeStarter and
- * https://github.com/android/wear-os-samples/tree/main/ComposeAdvanced to find the most up to date
- * changes to the libraries and their usages.
- */
-
 package io.github.gustins123.questionswearos.presentation
 
 import android.os.Bundle
@@ -11,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,13 +31,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.wear.compose.material.AutoCenteringParams
+import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.ScalingLazyColumn
+import androidx.wear.compose.material.Vignette
+import androidx.wear.compose.material.VignettePosition
 import androidx.wear.compose.material.rememberScalingLazyListState
 import io.github.gustins123.questionswearos.QuestionRepository
 
 class MainActivity : ComponentActivity() {
 
-    private val TAG = "GeminiWearApp" // Define a tag for your logs, easy to filter in Logcat
+    private val TAG = "QuestionsWearApp" // Define a tag for your logs, easy to filter in Logcat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,43 +67,54 @@ class MainActivity : ComponentActivity() {
             mutableStateOf(QuestionRepository.getRandomQuestion())
         }
 
-        val scalingLazyListState = rememberScalingLazyListState()
-
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        // Scaffold provides the standard Wear OS screen layout.
+        Scaffold(
+            vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) } // Fades top/bottom
         ) {
-            ScalingLazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                state = scalingLazyListState
+            // We use a standard Column to separate the scrollable area from the static button.
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                // This arrangement pushes the button to the bottom and lets the lazy column expand.
+                verticalArrangement = Arrangement.Center
             ) {
-                item {
-                    Text(
-                        text = currentQuestion,
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp, vertical = 4.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Center
+
+                // PART 1: The SCROLLABLE content area
+                ScalingLazyColumn(
+                    // The weight modifier makes this composable expand to fill all available
+                    // vertical space in the Column, pushing the button down.
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(
+                        top = 32.dp, // Pushes content down from the clipped top edge
+                        bottom = 40.dp // Ensures space between text and the static button
+                    ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    autoCentering = AutoCenteringParams(itemIndex = 0)
+                ) {
+                    item {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            textAlign = TextAlign.Center,
+                            text = currentQuestion
+                        )
+                    }
+                }
+
+                // PART 2: The STATIC button area
+                // This button is a direct child of the outer Column, not the ScalingLazyColumn.
+                // Therefore, it will not scroll.
+                Button(
+                    onClick = {
+                        currentQuestion = QuestionRepository.getRandomQuestion()
+                    },
+                    modifier = Modifier.padding(bottom = 16.dp) // Give it some space from the edge
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Refresh,
+                        contentDescription = "Next Question"
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Button(
-                onClick = {
-                    currentQuestion = QuestionRepository.getRandomQuestion()
-                },
-                modifier = Modifier.padding(bottom = 4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Refresh,
-                    contentDescription = "Regenerate Joke"
-                )
             }
         }
     }

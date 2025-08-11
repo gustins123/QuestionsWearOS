@@ -3,9 +3,6 @@ package io.github.gustins123.questionswearos.tile
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.tiles.ActionBuilders.LoadAction
-import androidx.wear.tiles.DimensionBuilders
-import androidx.wear.tiles.LayoutElementBuilders
 import androidx.wear.tiles.ModifiersBuilders
 import androidx.wear.tiles.ModifiersBuilders.Clickable
 import androidx.wear.tiles.RequestBuilders
@@ -15,6 +12,15 @@ import androidx.wear.tiles.TimelineBuilders
 import io.github.gustins123.questionswearos.QuestionRepository
 import com.google.android.horologist.compose.tools.LayoutRootPreview
 import com.google.android.horologist.tiles.CoroutinesTileService
+import androidx.wear.tiles.LayoutElementBuilders;
+import androidx.wear.tiles.LayoutElementBuilders.*;
+import androidx.wear.tiles.ModifiersBuilders.*;
+import androidx.wear.tiles.DimensionBuilders;
+import androidx.wear.tiles.*
+import androidx.wear.tiles.ActionBuilders.LoadAction
+import androidx.wear.tiles.DeviceParametersBuilders.DeviceParameters
+import androidx.wear.tiles.LayoutElementBuilders.*
+import androidx.wear.tiles.material.layouts.PrimaryLayout
 
 
 private const val RESOURCES_VERSION = "0"
@@ -39,7 +45,7 @@ class MainTileService : CoroutinesTileService() {
                 TimelineBuilders.TimelineEntry.Builder()
                     .setLayout(
                         LayoutElementBuilders.Layout.Builder()
-                            .setRoot(tileLayout())
+                            .setRoot(tileLayout(requestParams.deviceParameters!!))
                             .build()
                     )
                     .build()
@@ -54,39 +60,34 @@ class MainTileService : CoroutinesTileService() {
     }
 
 
-    private fun tileLayout(): LayoutElementBuilders.LayoutElement {
+    private fun tileLayout(deviceParameters: DeviceParameters): LayoutElementBuilders.LayoutElement {
         val text = QuestionRepository.getRandomQuestion()
 
 
-        return  LayoutElementBuilders.Box.Builder()
-            .setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
-            .setWidth(DimensionBuilders.expand())
-            .setHeight(DimensionBuilders.expand())
-            .addContent(
-                LayoutElementBuilders.Text.Builder()
+        val primaryLayout = PrimaryLayout.Builder(deviceParameters)
+            .setContent(
+                Text.Builder()
                     .setText(text)
                     .setMaxLines(7)
-                    .setModifiers(ModifiersBuilders.Modifiers.Builder()
-                        .setClickable(Clickable.Builder()
-                            .setId("foo")
-                            .setOnClick(LoadAction.Builder().build())
-                            .build()
-                        ).build()
-                    )
                     .build()
             )
             .build()
-    }
 
-    @Preview(
-        device = Devices.WEAR_OS_SMALL_ROUND,
-        showSystemUi = true,
-        backgroundColor = 0xff000000,
-        showBackground = true
-    )
-    @Composable
-    fun TilePreview() {
-        LayoutRootPreview(root = tileLayout())
+        return LayoutElementBuilders.Box.Builder()
+            .setWidth(DimensionBuilders.expand())
+            .setHeight(DimensionBuilders.expand())
+            .setModifiers(
+                ModifiersBuilders.Modifiers.Builder()
+                    .setClickable(
+                        Clickable.Builder()
+                            .setId("tile_click")
+                            .setOnClick(LoadAction.Builder().build())
+                            .build()
+                    )
+                    .build()
+            )
+            .addContent(primaryLayout)
+            .build()
     }
 }
 
